@@ -1,0 +1,14 @@
+# os
+disable_swap: true
+epel_enabled: true
+preinstall_selinux_state: disable
+
+# copy kubectl to ansible host
+kubectl_localhost: true
+kubeconfig_localhost: true
+
+# helm
+helm_enabled: true
+helm_deployment_type: host
+helm_version: "v2.9.1"
+helm_skip_refresh: true
