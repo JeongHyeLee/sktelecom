@@ -26,7 +26,7 @@ fi
 
 cd ~/apps
 git clone https://github.com/kubernetes-incubator/kubespray.git upstream-kubespray && cd upstream-kubespray
-pip install -r requirements.txt
+sudo pip install -r requirements.txt
 
 HOST=~/apps/upstream-kubespray/inventory/sample/hosts.ini
 
@@ -89,7 +89,7 @@ node_labels={"openstack-control-plane":"enabled", "openvswitch":"enabled"}
 [compute-node:vars]
 node_labels={"openstack-compute-node":"enabled", "openvswitch":"enabled"}""" >>$HOST
 
-ansible-playbook -u root -b -i ~/apps/upstream-kubespray/inventory/new/host.ini ~/apps/upstream-kubespray/cluster.yml
+ansible-playbook -u root -b -i ~/apps/upstream-kubespray/inventory/sample/hosts.ini --extra-vars=@~/sktelecom ~/apps/upstream-kubespray/cluster.yml
 
 
 curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get | cat > /tmp/helm_script.sh \
