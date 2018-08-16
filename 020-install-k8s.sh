@@ -38,6 +38,9 @@ for i in $(seq $number); do
    read  -p "#${i} input master node's <hostname> <ip-address> :" hostname ip_address
    master_array[${i}-1]=$hostname
    echo $hostname ip=$ip_address>>$HOST
+   cat /etc/hosts>etc_hosts
+   echo $ip_address $hostname>>etc_hosts
+   sudo mv etc_hosts /etc/hosts
    ssh-copy-id $ip_address
 done
 
@@ -46,6 +49,9 @@ for i in $(seq $number); do
    read  -p "#${i} input worker node's <hostname> <ip-address> :" hostname ip_address
    worker_array[${i}-1]=$hostname
    echo $hostname ip=$ip_address>>$HOST
+   cat /etc/hosts>etc_hosts
+   echo $ip_address $hostname>>etc_hosts
+   sudo mv etc_hosts /etc/hosts
    ssh-copy-id $ip_address
 done
 
@@ -85,12 +91,11 @@ for arr_item in ${worker_array[*]}; do
   echo $arr_item >>$HOST
 done
 echo """[controller-node:vars]
-node_labels={"openstack-control-plane":"enabled", "openvswitch":"enabled"}
+node_labels={\"openstack-control-plane\":\"enabled\", \"openvswitch\":\"enabled\"}
 [compute-node:vars]
-node_labels={"openstack-compute-node":"enabled", "openvswitch":"enabled"}""" >>$HOST
+node_labels={\"openstack-compute-node\":\"enabled\", \"openvswitch\":\"enabled\"}""" >>$HOST
 
-ansible-playbook -u root -b -i ~/apps/upstream-kubespray/inventory/sample/hosts.ini --extra-vars=@~/sktelecom ~/apps/upstream-kubespray/cluster.yml
-
+ansible-playbook -u ubuntu -b -i ~/apps/upstream-kubespray/inventory/sample/hosts.ini --extra-vars=~/sktelecom/extra-vars.yaml ~/apps/upstream-kubespray/cluster.yml
 
 curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get | cat > /tmp/helm_script.sh \
 && chmod 755 /tmp/helm_script.sh && /tmp/helm_script.sh --version v2.9.1
