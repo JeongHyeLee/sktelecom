@@ -1,5 +1,5 @@
 #master 
-new1 10.0.1.15
+hostname x.x.x.x(remove this sentence and fill the information)
 #worker 
-new2 10.0.1.10
+hostname x.x.x.x(remove this sentence and fill the information)
 end
