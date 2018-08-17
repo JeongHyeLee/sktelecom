@@ -1,62 +1,92 @@
 #!/bin/bash
+
 set -ex
 export PATH=$PATH:/usr/local/bin
 cd ~/
 
 mkdir -p ~/apps
-TACO_KUBESPRAY_DIR=~/apps/taco-kubespray
-if [ -d $TACO_KUBESPRAY_DIR ]; then
-  rm -rf $TACO_KUBESPRAY_DIR
-fi
 
 UPSTREAM_KUBESPRAY_DIR=~/apps/upstream-kubespray
 if [ -d $UPSTREAM_KUBESPRAY_DIR ]; then
   rm -rf $UPSTREAM_KUBESPRAY_DIR
 fi
 
-KUBESPRAY_DIR=~/apps/kubespray
-if [ -d $KUBESPRAY_DIR ]; then
-  rm -rf $KUBESPRAY_DIR
-fi
-
-CACHE_FILE=/tmp/taco-aio
-if [ -f $CACHE_FILE ]; then
-  rm -f $CACHE_FILE
-fi
-
 cd ~/apps
 git clone https://github.com/kubernetes-incubator/kubespray.git upstream-kubespray && cd upstream-kubespray
 sudo pip install -r requirements.txt
 
-HOST=~/apps/upstream-kubespray/inventory/sample/hosts.ini
+new_taco=~/apps/upstream-kubespray/inventory/new_version_TACO
+mkdir -p $new_taco
+cp -r ~/apps/upstream-kubespray/inventory/sample $new_taco
+HOST=~/apps/upstream-kubespray/inventory/new_version_TACO/hosts.ini
 
-ssh-keygen -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N ""
+echo "******** You have to make host information file named \"host_file.txt\" ********"
 
-echo "[enter the hostname that you want to use as master and worker node and ip address respectively]"
-read -p "****how many \"masters\" : " number
-for i in $(seq $number); do
-   read  -p "#${i} input master node's <hostname> <ip-address> :" hostname ip_address
-   master_array[${i}-1]=$hostname
-   echo $hostname ip=$ip_address>>$HOST
-   cat /etc/hosts>etc_hosts
-   echo $ip_address $hostname>>etc_hosts
-   sudo mv etc_hosts /etc/hosts
-   ssh-copy-id $ip_address
-done
+sed -n '1,/#workwer/p' host_file.txt | sed "/#workwer/d" > master_node
+i=0
+while read line
+do
+  IFS=' ' read -a array <<< $line
+#for setting master nodes
+  hostname=$(echo ${array[0]})
+  ip_address=$(echo ${array[1]})
+  if [ $hostname != "#master" ]; then
+      master_array[${i}]=$hostname
+      echo "${master_array[${i}]} i=$ip_address">>$HOST
+      i=$((i+1))
 
-read -p "****how many \"workers\" : " number
-for i in $(seq $number); do
-   read  -p "#${i} input worker node's <hostname> <ip-address> :" hostname ip_address
-   worker_array[${i}-1]=$hostname
-   echo $hostname ip=$ip_address>>$HOST
-   cat /etc/hosts>etc_hosts
-   echo $ip_address $hostname>>etc_hosts
-   sudo mv etc_hosts /etc/hosts
-   ssh-copy-id $ip_address
-done
+      cat /etc/hosts>etc_hosts
+      echo $ip_address $hostname>>etc_hosts
+      sudo mv etc_hosts /etc/hosts
+      ssh-copy-id $ip_address
+  fi 
+done < "master_node"
+  
+sed -n '/#workwer/,/end/p' host_file.txt | sed "/end/d" > worker_node
+i=0
+while read line
+do
+  IFS=' ' read -a array <<< $line
+#for setting worker nodes
+    
+  hostname=$(echo ${array[0]})
+  ip_address=$(echo ${array[1]})
+  if [ $hostname != "#worker" ]; then
+      worker_array[${i}]=$hostname
+      echo "${master_array[${i}]} i=$ip_address">>$HOST
+      i=$((i+1))
 
-# if the information is in file
-# not yet
+      cat /etc/hosts>etc_hosts
+      echo $ip_address $hostname>>etc_hosts
+      sudo mv etc_hosts /etc/hosts
+      ssh-copy-id $ip_address
+  fi 
+done < "worker_node"
+
+# rm master_node && rm worker_node 
+
+#echo "[enter the hostname and ip address that you use master and worker node respectively]"
+#read -p "****how many \"master\"nodes : " number
+#for i in $(seq $number); do
+  # read  -p "#${i} input master node's <hostname> <ip-address> :" hostname ip_address
+  # master_array[${i}-1]=$hostname
+  # echo $hostname ip=$ip_address>>$HOST
+  # cat /etc/hosts>etc_hosts
+  # echo $ip_address $hostname>>etc_hosts
+  # sudo mv etc_hosts /etc/hosts
+  # ssh-copy-id $ip_address
+#done
+
+#read -p "****how many \"worker\"nodes : " number
+#for i in $(seq $number); do
+   #read  -p "#${i} input worker node's <hostname> <ip-address> :" hostname ip_address
+   #worker_array[${i}-1]=$hostname
+   #echo $hostname ip=$ip_address>>$HOST
+   #cat /etc/hosts>etc_hosts
+   #echo $ip_address $hostname>>etc_hosts
+   #sudo mv etc_hosts /etc/hosts
+   #ssh-copy-id $ip_address
+#done
 
 echo "[kube-master]">>$HOST
 for arr_item in ${master_array[*]}
@@ -95,7 +125,7 @@ node_labels={\"openstack-control-plane\":\"enabled\", \"openvswitch\":\"enabled\
 [compute-node:vars]
 node_labels={\"openstack-compute-node\":\"enabled\", \"openvswitch\":\"enabled\"}""" >>$HOST
 
-ansible-playbook -u ubuntu -b -i ~/apps/upstream-kubespray/inventory/sample/hosts.ini --extra-vars=~/sktelecom/extra-vars.yaml ~/apps/upstream-kubespray/cluster.yml
+ansible-playbook -u ubuntu -b -i ~/apps/upstream-kubespray/inventory/new_version_TACO/hosts.ini --extra-vars=~/sktelecom/extra-vars.yaml ~/apps/upstream-kubespray/cluster.yml
 
 curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get | cat > /tmp/helm_script.sh \
 && chmod 755 /tmp/helm_script.sh && /tmp/helm_script.sh --version v2.9.1
