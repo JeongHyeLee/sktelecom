@@ -22,12 +22,12 @@ HOST=~/apps/upstream-kubespray/inventory/new_version_TACO/hosts.ini
 
 echo "******** You have to make host information file named \"host_file.txt\" ********"
 
-sed -n '1,/#workwer/p' host_file.txt | sed "/#workwer/d" > master_node
+sed -n '1,/#worker/p' ~/sktelecom/host_file.txt | sed "/#worker/d" > master_node
 i=0
 while read line
 do
   IFS=' ' read -a array <<< $line
-#for setting master nodes
+  #for setting master nodes
   hostname=$(echo ${array[0]})
   ip_address=$(echo ${array[1]})
   if [ $hostname != "#master" ]; then
@@ -42,18 +42,18 @@ do
   fi 
 done < "master_node"
   
-sed -n '/#workwer/,/end/p' host_file.txt | sed "/end/d" > worker_node
+sed -n '/#worker/,/end/p' ~/sktelecom/host_file.txt | sed "/end/d" > worker_node
 i=0
 while read line
 do
   IFS=' ' read -a array <<< $line
-#for setting worker nodes
+  #for setting worker nodes
     
   hostname=$(echo ${array[0]})
   ip_address=$(echo ${array[1]})
   if [ $hostname != "#worker" ]; then
       worker_array[${i}]=$hostname
-      echo "${master_array[${i}]} i=$ip_address">>$HOST
+      echo "${worker_array[${i}]} i=$ip_address">>$HOST
       i=$((i+1))
 
       cat /etc/hosts>etc_hosts
@@ -64,6 +64,11 @@ do
 done < "worker_node"
 
 # rm master_node && rm worker_node 
+
+# edit nameserver 
+cat /etc/resolv.conf > resolv_config
+echo "nameserver 8.8.8.8">resolv_config
+sudo mv resolv_config /etc/resolv.conf
 
 #echo "[enter the hostname and ip address that you use master and worker node respectively]"
 #read -p "****how many \"master\"nodes : " number
@@ -125,16 +130,20 @@ node_labels={\"openstack-control-plane\":\"enabled\", \"openvswitch\":\"enabled\
 [compute-node:vars]
 node_labels={\"openstack-compute-node\":\"enabled\", \"openvswitch\":\"enabled\"}""" >>$HOST
 
+sudo apt remove python3
+
 ansible-playbook -u ubuntu -b -i ~/apps/upstream-kubespray/inventory/new_version_TACO/hosts.ini --extra-vars=~/sktelecom/extra-vars.yaml ~/apps/upstream-kubespray/cluster.yml
 
 curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get | cat > /tmp/helm_script.sh \
 && chmod 755 /tmp/helm_script.sh && /tmp/helm_script.sh --version v2.9.1
 
-#echo """nameserver 10.96.0.10
-#nameserver 8.8.8.8
-#nameserver 8.8.4.4
-#search openstack.svc.cluster.local svc.cluster.local cluster.local
-#options ndots:5""" > /etc/resolv.conf
+cat /etc/resolv.conf > resolv_config
+echo """nameserver 10.96.0.10
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+search openstack.svc.cluster.local svc.cluster.local cluster.local
+options ndots:5""" >resolv_config
+sudo mv resolv_config /etc/resolv.conf
 
 set -e
 

@@ -1,8 +1,5 @@
 #master 
-aas 123
-bsdf 234
-csdfsfa 345
+new1 10.0.1.15
 #worker 
-dfsfd 456
-esdfasdf 567 
+new2 10.0.1.10
 end
