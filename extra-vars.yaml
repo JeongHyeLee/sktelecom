@@ -7,8 +7,13 @@ preinstall_selinux_state: disable
 kubectl_localhost: true
 kubeconfig_localhost: true
 
+# set kube_service address 
+kube_service_addresses: 10.96.0.0/16
+skydns_server: "{{ kube_service_addresses|ipaddr('net')|ipaddr('10')|ipaddr('address') }}"
+
 # helm
 helm_enabled: true
 helm_deployment_type: host
 helm_version: "v2.9.1"
 helm_skip_refresh: true
+
