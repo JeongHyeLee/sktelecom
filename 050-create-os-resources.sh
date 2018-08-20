@@ -1,5 +1,4 @@
 #!/bin/bash
-(( EUID )) && echo You need to be root. && exit 1
 
 export LC_ALL="en_US.UTF-8"
 export OS_PROJECT_DOMAIN_NAME=default
@@ -15,7 +14,8 @@ echo """nameserver 10.96.0.10
 nameserver 8.8.8.8
 nameserver 8.8.4.4
 search openstack.svc.cluster.local svc.cluster.local cluster.local
-options ndots:5""" > /etc/resolv.conf
+options ndots:5""" > resolv_conf
+sudo mv resolv_conf /etc/resolv.conf
 
 echo "Create private network..."
 PRIVATE_NAME_TEMP=$(openstack network list | grep private-net | awk '{print $4}')
