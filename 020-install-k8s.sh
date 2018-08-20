@@ -127,7 +127,8 @@ echo """nameserver 10.96.0.10
 nameserver 8.8.8.8
 nameserver 8.8.4.4
 search openstack.svc.cluster.local svc.cluster.local cluster.local
-options ndots:5""" >resolv_config
+options ndots:5
+options timeout:1""" >resolv_config
 sudo mv resolv_config /etc/resolv.conf
 
 set -e
