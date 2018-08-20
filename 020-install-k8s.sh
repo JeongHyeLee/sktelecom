@@ -28,7 +28,10 @@ HOST=~/apps/upstream-kubespray/inventory/new_version_TACO/hosts.ini
 echo "******** You have to make host information file named \"host_file.txt\" ********"
 
 sed -n '1,/#worker/p' ~/sktelecom/host_file.txt | sed "/#worker/d" > master_node
+# sed -e '/^$/'d를 넣는게 더 안전할것 같아 확인후 넣기 
+# if folder is changed , the address name 'sktelecom' have to change
 i=0
+
 while read line
 do
   IFS=' ' read -a array <<< $line
