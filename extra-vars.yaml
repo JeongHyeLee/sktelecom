@@ -11,6 +11,9 @@ kubeconfig_localhost: true
 kube_service_addresses: 10.96.0.0/16
 skydns_server: "{{ kube_service_addresses|ipaddr('net')|ipaddr('10')|ipaddr('address') }}"
 
+# set kube_pod_subnet
+kube_pods_subnet: 172.16.0.0/16
+
 # helm
 helm_enabled: true
 helm_deployment_type: host
