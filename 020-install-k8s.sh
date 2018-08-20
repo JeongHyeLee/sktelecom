@@ -13,6 +13,11 @@ fi
 
 cd ~/apps
 git clone https://github.com/kubernetes-incubator/kubespray.git upstream-kubespray && cd upstream-kubespray
+git checkout -b branch_v2.6.0 tags/v2.6.0
+#if tag="master"; then
+   
+#defalut = 2.6.0
+
 sudo pip install -r requirements.txt
 
 new_taco=~/apps/upstream-kubespray/inventory/new_version_TACO
@@ -32,7 +37,7 @@ do
   ip_address=$(echo ${array[1]})
   if [ $hostname != "#master" ]; then
       master_array[${i}]=$hostname
-      echo "${master_array[${i}]} i=$ip_address">>$HOST
+      echo "${master_array[${i}]} ip=$ip_address">>$HOST
       i=$((i+1))
 
       cat /etc/hosts>etc_hosts
@@ -53,7 +58,7 @@ do
   ip_address=$(echo ${array[1]})
   if [ $hostname != "#worker" ]; then
       worker_array[${i}]=$hostname
-      echo "${worker_array[${i}]} i=$ip_address">>$HOST
+      echo "${worker_array[${i}]} ip=$ip_address">>$HOST
       i=$((i+1))
 
       cat /etc/hosts>etc_hosts
@@ -63,35 +68,12 @@ do
   fi 
 done < "worker_node"
 
-# rm master_node && rm worker_node 
+rm master_node && rm worker_node 
 
 # edit nameserver 
 cat /etc/resolv.conf > resolv_config
 echo "nameserver 8.8.8.8">resolv_config
 sudo mv resolv_config /etc/resolv.conf
-
-#echo "[enter the hostname and ip address that you use master and worker node respectively]"
-#read -p "****how many \"master\"nodes : " number
-#for i in $(seq $number); do
-  # read  -p "#${i} input master node's <hostname> <ip-address> :" hostname ip_address
-  # master_array[${i}-1]=$hostname
-  # echo $hostname ip=$ip_address>>$HOST
-  # cat /etc/hosts>etc_hosts
-  # echo $ip_address $hostname>>etc_hosts
-  # sudo mv etc_hosts /etc/hosts
-  # ssh-copy-id $ip_address
-#done
-
-#read -p "****how many \"worker\"nodes : " number
-#for i in $(seq $number); do
-   #read  -p "#${i} input worker node's <hostname> <ip-address> :" hostname ip_address
-   #worker_array[${i}-1]=$hostname
-   #echo $hostname ip=$ip_address>>$HOST
-   #cat /etc/hosts>etc_hosts
-   #echo $ip_address $hostname>>etc_hosts
-   #sudo mv etc_hosts /etc/hosts
-   #ssh-copy-id $ip_address
-#done
 
 echo "[kube-master]">>$HOST
 for arr_item in ${master_array[*]}
@@ -126,9 +108,9 @@ for arr_item in ${worker_array[*]}; do
   echo $arr_item >>$HOST
 done
 echo """[controller-node:vars]
-node_labels={\"openstack-control-plane\":\"enabled\", \"openvswitch\":\"enabled\"}
+node_labels={\"openstack-control-plane\":\"enabled\",\"openvswitch\":\"enabled\"}
 [compute-node:vars]
-node_labels={\"openstack-compute-node\":\"enabled\", \"openvswitch\":\"enabled\"}""" >>$HOST
+node_labels={\"openstack-compute-node\":\"enabled\",\"openvswitch\":\"enabled\"}""" >>$HOST
 
 sudo apt remove python3
 
