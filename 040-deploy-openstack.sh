@@ -1,5 +1,5 @@
 #!/bin/bash
-(( EUID )) && echo You need to be root. && exit 1
+
 set -ex
 # compare kernel version using float and string; return 0 when greather or equal
 isge () {
