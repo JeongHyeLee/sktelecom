@@ -2,6 +2,7 @@
 
 set -ex
 export PATH=$PATH:/usr/local/bin
+TAG="v2.6.0"
 cd ~/
 
 mkdir -p ~/apps
@@ -13,11 +14,9 @@ fi
 
 cd ~/apps
 git clone https://github.com/kubernetes-incubator/kubespray.git upstream-kubespray && cd upstream-kubespray
-git checkout -b branch_v2.6.0 tags/v2.6.0
-#if tag="master"; then
-   
-#defalut = 2.6.0
-
+if [[ $TAG != "master" ]]; then
+  git checkout -b branch_$TAG tags/$TAG
+fi
 sudo pip install -r requirements.txt
 
 new_taco=~/apps/upstream-kubespray/inventory/new_version_TACO
@@ -27,8 +26,8 @@ HOST=~/apps/upstream-kubespray/inventory/new_version_TACO/hosts.ini
 
 echo "******** You have to make host information file named \"host_file.txt\" ********"
 
-sed -n '1,/#worker/p' ~/sktelecom/host_file.txt | sed "/#worker/d" > master_node
-# sed -e '/^$/'d를 넣는게 더 안전할것 같아 확인후 넣기 
+sed -n '1,/#worker/p' ~/sktelecom/host_file.txt | sed "/#worker/d" | sed -e '/^$/'d > master_node
+
 # if folder is changed , the address name 'sktelecom' have to change
 i=0
 
@@ -117,7 +116,7 @@ node_labels={\"openstack-compute-node\":\"enabled\",\"openvswitch\":\"enabled\"}
 
 sudo apt remove python3
 
-ansible-playbook -u ubuntu -b -i ~/apps/upstream-kubespray/inventory/new_version_TACO/hosts.ini --extra-vars=~/sktelecom/extra-vars.yaml ~/apps/upstream-kubespray/cluster.yml
+ansible-playbook -u ubuntu -b -i ~/apps/upstream-kubespray/inventory/new_version_TACO/hosts.ini --extra-vars=@~/sktelecom/extra-vars.yaml ~/apps/upstream-kubespray/cluster.yml
 
 curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get | cat > /tmp/helm_script.sh \
 && chmod 755 /tmp/helm_script.sh && /tmp/helm_script.sh --version v2.9.1
