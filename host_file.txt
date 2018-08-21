@@ -1,7 +1,7 @@
 #master 
-new1 10.0.1.9
+hostname x.x.x.x(remove this sentence)
 
 #worker
-new2 10.0.1.6
+hostname x.x.x.x(remove this sentence) 
  
 end
