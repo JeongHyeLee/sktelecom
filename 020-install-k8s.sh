@@ -126,6 +126,24 @@ ansible-playbook -u ubuntu -b -i ~/apps/upstream-kubespray/inventory/new_version
 curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get | cat > /tmp/helm_script.sh \
 && chmod 755 /tmp/helm_script.sh && /tmp/helm_script.sh --version v2.9.1
 
+kubectl label nodes openstack-control-plane=enabled --all --namespace=openstack --overwrite
+kubectl label nodes openvswitch=enabled --all --namespace=openstack --overwrite
+kubectl label nodes openstack-compute-node=enabled --all --namespace=openstack --overwrite
+kubectl label nodes kubernetes-control-plane=enabled --all --overwrite
+kubectl label nodes ceph-mds=enabled --all --overwrite
+kubectl label nodes ceph-mon=enabled --all --overwrite
+kubectl label nodes ceph-osd=enabled --all --overwrite
+kubectl label nodes ceph-rgw=enabled --all --overwrite
+kubectl label nodes ceph-mgr=enabled --all --overwrite
+
+kubectl create clusterrolebinding openstack \
+--clusterrole=cluster-admin \
+--serviceaccount=openstack:default
+
+kubectl create clusterrolebinding ceph \
+--clusterrole=cluster-admin \
+--serviceaccount=ceph:default
+
 cat /etc/resolv.conf > resolv_config
 echo """nameserver 10.96.0.10
 nameserver 8.8.8.8
