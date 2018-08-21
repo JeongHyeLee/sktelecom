@@ -50,6 +50,8 @@ fi
 
 cd ~/apps
 git clone https://github.com/sktelecom-oslab/armada-manifests.git
+sudo cp /etc/kubernetes/admin.conf ~/.kube/config 
+sudo chown $USER:$USER ~/.kube/config
 
 armada apply ~/apps/armada-manifests/taco-aio-manifest.yaml \
     --set chart:ceph:values.conf.ceph.global.fsid=$FSID \
@@ -57,3 +59,7 @@ armada apply ~/apps/armada-manifests/taco-aio-manifest.yaml \
     --set chart:ceph:values.network.public=$CIDR \
     --set chart:ceph:values.network.cluster=$CIDR \
     --set chart:neutron:values.network.interface.tunnel=$EXNIC
+    # when you make vm with multiple network, you have to add --set option at here
+    # --set chart:neutron:values.network.interface.tunnel=ens3
+    --set chart:openvswitch:values.network.interface.external=ens4
+

@@ -1,6 +1,13 @@
 #!/bin/bash
 
-set -ex
+set -ex 
+
+echo "******** You have to make host information file named \"host_file.txt\" ********"
+read -p " ARE YOU FILL THE \"host_file.txt\"? (y/n)" answer
+if [ $answer != 'y' ]; then 
+   echo "fill the host_file.txt and retry"
+fi
+
 export PATH=$PATH:/usr/local/bin
 TAG="v2.6.0"
 cd ~/
@@ -24,11 +31,9 @@ mkdir -p $new_taco
 cp -r ~/apps/upstream-kubespray/inventory/sample $new_taco
 HOST=~/apps/upstream-kubespray/inventory/new_version_TACO/hosts.ini
 
-echo "******** You have to make host information file named \"host_file.txt\" ********"
-
 sed -n '1,/#worker/p' ~/sktelecom/host_file.txt | sed "/#worker/d" | sed -e '/^$/'d > master_node
 
-# if folder is changed , the address name 'sktelecom' have to change
+# if folder is changed , the address 'sktelecom' have to be changed
 i=0
 
 while read line
@@ -49,7 +54,7 @@ do
   fi 
 done < "master_node"
   
-sed -n '/#worker/,/end/p' ~/sktelecom/host_file.txt | sed "/end/d" > worker_node
+sed -n '/#worker/,/end/p' ~/sktelecom/host_file.txt | sed "/end/d" | sed -e '/^$/'d > worker_node
 i=0
 while read line
 do
