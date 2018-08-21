@@ -33,7 +33,7 @@ HOST=~/apps/upstream-kubespray/inventory/new_version_TACO/hosts.ini
 
 sed -n '1,/#worker/p' ~/sktelecom/host_file.txt | sed "/#worker/d" | sed -e '/^$/'d > master_node
 
-# if folder is changed , the address 'sktelecom' have to be changed
+# if folder is changed , the address 'sktelecom' must be changed
 i=0
 
 while read line
