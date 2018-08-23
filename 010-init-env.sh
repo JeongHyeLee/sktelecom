@@ -22,6 +22,7 @@ elif [ $OS_DISTRO == CentOS ]; then
     # TODO Don't leave firewall disabled permanently, use only for TACO-AIO
     sudo systemctl disable firewalld
 elif [ $OS_DISTRO == Ubuntu ]; then
+    cat /etc/apt/sources.list | sed 's/nova.clouds.archive.ubuntu.com/ftp.daum.net/g'
     sudo apt-get update
     sudo apt-get -y upgrade
     sudo apt install -y python python-pip
